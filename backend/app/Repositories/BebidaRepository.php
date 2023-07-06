@@ -46,5 +46,61 @@ class BebidaRepository{
         }
     }
 
+    public function viewBebida ($request){
+
+        try{
+            $bebida = Bebida::find($request->id);
+            return response()->json([
+                "message" => "Bebida obtenida correctamente",
+                "data" => $bebida
+            ], Response::HTTP_OK);
+        } catch(Exception $e){
+            Log::error($e->getMessage());
+            return response()->json([
+                "message" => "Error al obtener bebida",
+                "data" => $e->getMessage()
+            ], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+
+    public function updateBebida ($request){
+
+        try{
+            $bebida = Bebida::find($request->id);
+            $bebida->nombre = $request->nombre;
+            $bebida->formato = $request->formato;
+            $bebida->save();
+            return response()->json([
+                "message" => "Bebida actualizada correctamente",
+                "data" => $bebida
+            ], Response::HTTP_OK);
+        } catch(Exception $e){
+            Log::error($e->getMessage());
+            return response()->json([
+                "message" => "Error al actualizar bebida",
+                "data" => $e->getMessage()
+            ], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function deleteBebida ($request){
+
+        try{
+            $bebida = Bebida::find($request->id);
+            $bebida->delete();
+            return response()->json([
+                "message" => "Bebida eliminada correctamente",
+                "data" => $bebida
+            ], Response::HTTP_OK);
+        } catch(Exception $e){
+            Log::error($e->getMessage());
+            return response()->json([
+                "message" => "Error al eliminar bebida",
+                "data" => $e->getMessage()
+            ], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
 
 }

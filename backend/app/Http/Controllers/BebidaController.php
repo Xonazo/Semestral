@@ -30,4 +30,19 @@ class BebidaController extends Controller
     {
         return $this->bebidaRepository->viewAllBebidas($request);
     }
+
+    public function viewBebida(Request $request)
+    {
+        return $this->bebidaRepository->viewBebida($request);
+    }
+
+    public function updateBebida(Request $request)
+    {
+        return $this->bebidaRepository->updateBebida($request);
+    }
+
+    public function deleteBebida(Request $request)
+    {
+        return $this->bebidaRepository->deleteBebida($request);
+    }
 }

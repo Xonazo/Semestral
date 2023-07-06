@@ -23,4 +23,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::prefix('/bebida')->group(function () {
     Route::post('/create', [BebidaController::class, 'createBebida']);
     Route::get('/viewAll', [BebidaController::class, 'viewAllBebidas']);
+    Route::get('/view', [BebidaController::class, 'viewBebida']);
+    Route::put('/update', [BebidaController::class, 'updateBebida']);
+    Route::delete('/delete', [BebidaController::class, 'deleteBebida']);
 });
