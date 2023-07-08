@@ -32,6 +32,7 @@ const bebidaPage = () => {
   const [nombre, setNombre] = useState("");
   const [formato, setFormato] = useState("");
   const [isOpenEdit, setIsOpenEdit] = useState(false);
+  const[isOpenDelete, setIsOpenDelete] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,7 +44,7 @@ const bebidaPage = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    setIsOpen(false);
+    setIsOpenDelete(false);
     await deleteBebida(id);
     const bebidasData = await getBebidas();
     setBebidas(bebidasData);
@@ -75,9 +76,9 @@ const handleCreate = async () => {
 };
 
 
-
+    //AVISO DE ELIMINAR
   const alertDialogContent = (
-    <AlertDialog isOpen={isOpen} onClose={() => setIsOpen(false)}>
+    <AlertDialog isOpen={isOpenDelete} onClose={() => setIsOpenDelete(false)}>
       <AlertDialogOverlay>
         <AlertDialogContent>
           <AlertDialogHeader fontSize="lg" fontWeight="bold">
@@ -87,7 +88,7 @@ const handleCreate = async () => {
             ¿Estás seguro de que deseas eliminar esta bebida?
           </AlertDialogBody>
           <AlertDialogFooter>
-            <Button onClick={() => setIsOpen(false)}>Cancelar</Button>
+            <Button onClick={() => setIsOpenDelete(false)}>Cancelar</Button>
             <Button
               colorScheme="red"
               onClick={() => handleDelete(selectedBebidaId)}
@@ -100,8 +101,8 @@ const handleCreate = async () => {
       </AlertDialogOverlay>
     </AlertDialog>
   );
-  
 
+      //MODAL DE EDITAR
     const modalUpdate =(
       <Modal isOpen={isOpenEdit} onClose={() => setIsOpenEdit(false)}>
       <ModalOverlay />
@@ -134,6 +135,7 @@ const handleCreate = async () => {
     </Modal>
     );
 
+    //MODAL DE CREAR
     const modalCreate =(
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
       <ModalOverlay />
@@ -177,11 +179,12 @@ const handleCreate = async () => {
       <Container
         maxW="container.xl">
         <TableContainer  >
-          <Table variant='striped' colorScheme='blackAlpha'>
+          <Table variant='striped' colorScheme='blackAlpha'  >
             <Thead bg={'black'} >
               <Tr>
-                <Th color={'white'} p={3}>Nombre</Th>
-                <Th color={'white'} p={3}>Formato</Th>
+                <Th fontSize={"15px"} color={'white'} p={3}>Nombre</Th>
+                <Th fontSize={"15px"} color={'white'} p={3}>Formato</Th>
+                <Th fontSize={"15px"} color={'white'} p={3}>Acciones</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -189,12 +192,14 @@ const handleCreate = async () => {
                 <Tr key={bebida.id}>
                   <Td>{bebida.nombre}</Td>
                   <Td>{bebida.formato}</Td>
+                  <Td>
                   <IconButton
                     icon={<EditIcon />}
                     title="Editar"
                     variant="ghost"
                     aria-label="Editar"
                     mr={2}
+
                     onClick={() => handleEdit(bebida.id)}
                   />
                   <IconButton
@@ -203,10 +208,11 @@ const handleCreate = async () => {
                     variant="ghost"
                     aria-label="Eliminar"
                     onClick={() => {
-                      setIsOpen(true);
+                      setIsOpenDelete(true);
                       setSelectedBebidaId(bebida.id);
                     }}
                   />
+                  </Td>
                 </Tr>
               ))}
               {alertDialogContent}

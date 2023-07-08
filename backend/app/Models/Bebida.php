@@ -16,4 +16,15 @@ class Bebida extends Model
         'nombre',
         'formato'
     ];
+
+    public function detallesIngresos()
+    {
+        return $this->hasMany(DetalleIngreso::class, 'bebida_id');
+    }
+
+    public function stocks()
+    {
+        return $this->hasMany(Stock::class, 'bebida_id');
+    }
+
 }

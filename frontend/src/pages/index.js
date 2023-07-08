@@ -22,7 +22,7 @@ export default function Home() {
       <Flex
         justifyContent="center"
         alignItems="center"
-        h="calc(100vh - 80px)"
+        h="calc(100vh - 70px)"
         style={{
           backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(barrera-envases-pet.png)",
           backgroundSize: "cover",

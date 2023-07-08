@@ -4,7 +4,7 @@ import { Box, Flex, Spacer, Link, Heading } from "@chakra-ui/react";
 const NavBar = () => {
 
   return (
-    <Box bg="black" px={8} py={6}>
+    <Box bg="black" px={8} py={5} >
       <Flex align="center" px={40}>
         <Heading size="md" color="white">
           Logo
