@@ -49,6 +49,8 @@ export default function Home() {
           </Stack>
         </Box>
         <Box
+          onClick={() => { window.location.href = "/bodegas" }}
+
           width="200px"
           height="180px"
           backgroundColor="rgba(255, 255, 255, 0.5)" // Color blanco con una opacidad del 50%

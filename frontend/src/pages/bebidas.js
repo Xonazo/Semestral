@@ -195,8 +195,8 @@ const handleCreate = async () => {
                   <Td>
                   <IconButton
                     icon={<EditIcon />}
+                    colorScheme="blue"
                     title="Editar"
-                    variant="ghost"
                     aria-label="Editar"
                     mr={2}
 
@@ -204,9 +204,12 @@ const handleCreate = async () => {
                   />
                   <IconButton
                     icon={<DeleteIcon />}
+                    colorScheme="red"
                     title="Eliminar"
-                    variant="ghost"
                     aria-label="Eliminar"
+                    mr={2}
+
+
                     onClick={() => {
                       setIsOpenDelete(true);
                       setSelectedBebidaId(bebida.id);
