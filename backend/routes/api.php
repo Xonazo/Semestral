@@ -51,6 +51,7 @@ Route::prefix('/ingreso')->group(function () {
 Route::prefix('/stock')->group(function () {
     Route::get('/viewAll', [StockController::class, 'viewAllStock']);
     Route::get('/view', [StockController::class, 'view']);
+    Route::post('/egreso', [StockController::class, 'egreso']);
 });
 
 Route::prefix('/traspaso')->group(function () {

@@ -133,33 +133,40 @@ class IngresoRepository{
         }
     }
 
-public function viewPorBodega($request)
-{
-    try {
-        $idBodega = $request->input('id_bodega');
-
-        $ingresos = Ingreso::where('id_bodega', $idBodega)
-            ->with('detalles', 'bodega')
-            ->get();
-
-        $ingresos = $ingresos->map(function ($ingreso) {
-            $ingreso->detalles->makeHidden(['id', 'ingreso_id']);
-            $ingreso->bodega->makeHidden(['created_at', 'updated_at']);
-            $ingreso->bodega_nombre = $ingreso->bodega->nombre;
-            unset($ingreso->bodega);
-            return $ingreso;
-        });
-
-        return response()->json([
-            'message' => 'Ingresos obtenidos correctamente',
-            'ingresos' => $ingresos
-        ], Response::HTTP_OK);
-    } catch (Exception $e) {
-        return response()->json([
-            'message' => 'Error al obtener los ingresos',
-            'error' => $e->getMessage()
-        ], Response::HTTP_INTERNAL_SERVER_ERROR);
+    public function viewPorBodega($request)
+    {
+        try {
+            $idBodega = $request->input('id_bodega');
+    
+            $ingresos = Ingreso::where('id_bodega', $idBodega)
+                ->with('detalles.bebida', 'bodega')
+                ->get();
+    
+            $ingresos = $ingresos->map(function ($ingreso) {
+                $ingreso->detalles->makeHidden(['id', 'ingreso_id']);
+                $ingreso->bodega->makeHidden(['created_at', 'updated_at']);
+                $ingreso->bodega_nombre = $ingreso->bodega->nombre;
+                unset($ingreso->bodega);
+    
+                foreach ($ingreso->detalles as $detalle) {
+                    $detalle->nombre_bebida = $detalle->bebida->nombre;
+                    unset($detalle->bebida);
+                }
+    
+                return $ingreso;
+            });
+    
+            return response()->json([
+                'message' => 'Ingresos obtenidos correctamente',
+                'ingresos' => $ingresos
+            ], Response::HTTP_OK);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener los ingresos',
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
-}
+    
 
 }

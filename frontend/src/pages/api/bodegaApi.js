@@ -1,9 +1,10 @@
 import axios from 'axios';
 
 export const getBodegas = async () => {
+
     const response = await axios.get('http://127.0.0.1:8000/api/bodega/viewAll');
     return response.data.data;
-
+  
 }
 
 

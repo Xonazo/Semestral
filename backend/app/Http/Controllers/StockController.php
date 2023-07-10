@@ -33,4 +33,9 @@ class StockController extends Controller
         return $this->stockRepository->view($request);
     }
 
+    public function egreso(Request $request)
+    {
+        return $this->stockRepository->egreso($request);
+    }
+
 }

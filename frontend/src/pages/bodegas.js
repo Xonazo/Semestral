@@ -18,6 +18,8 @@ import {
     Box,
     List,
     ListItem,
+    Flex,
+    Select
 } from '@chakra-ui/react'
 import {
     Drawer,
@@ -29,7 +31,7 @@ import {
     DrawerCloseButton,
 } from '@chakra-ui/react'
 
-import { DeleteIcon, EditIcon, PlusSquareIcon } from "@chakra-ui/icons";
+import { DeleteIcon, EditIcon, PlusSquareIcon, ArrowForwardIcon } from "@chakra-ui/icons";
 import { AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter } from "@chakra-ui/react";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Input, FormControl, FormLabel } from "@chakra-ui/react";
 import NavBar from "../components/NavBar.jsx";
@@ -37,6 +39,9 @@ import NavBar from "../components/NavBar.jsx";
 import { getBodegas, deleteBodega, updateBodega, createBodega } from "./api/bodegaApi.js";
 import { getStock } from "./api/stockApi.js";
 import { Tooltip } from '@chakra-ui/react';
+import { createTraspaso } from "./api/traspasoApi.js";
+import { getBebidas } from "./api/bebida.js";
+
 
 const bodegaPage = () => {
 
@@ -48,6 +53,19 @@ const bodegaPage = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [isOpenDrawer, setIsOpenDrawer] = useState(false);
     const [stockData, setStockData] = useState(null);
+    const [isOpenTraspaso, setIsOpenTraspaso] = useState(false);
+    const [id_bodega_origen, setid_bodega_origen] = useState("");
+    const [id_bodega_destino, setid_bodega_destino] = useState("");
+    const [guia, setguia] = useState("");
+    const [detalleBebida, setDetalleBebida] = useState('');
+    const [detalleCantidad, setDetalleCantidad] = useState('');
+    const [bebidas, setBebidas] = useState([]);
+    const [productos, setProductos] = useState([]);
+    const [bodegaOrigenSeleccionada, setBodegaOrigenSeleccionada] = useState(null);
+
+
+
+
     useEffect(() => {
         const fetchData = async () => {
             const bodegas = await getBodegas();
@@ -55,7 +73,18 @@ const bodegaPage = () => {
         };
         fetchData();
         getBodegas();
+        
     }, []);
+
+
+    useEffect(() => {
+        const fetchBebidas = async () => {
+            const bebidasData = await getBebidas();
+            setBebidas(bebidasData);
+        };
+        fetchBebidas();
+    }, []);
+
 
     const handleDelete = async (id) => {
         setIsOpenDelete(false);
@@ -94,13 +123,41 @@ const bodegaPage = () => {
 
         if (stock.length === 0) {
             setStockData(null); // Eliminar el valor anterior de stockData
-          }
+        }
 
     };
 
     const onClose = () => {
         setIsOpenDrawer(false);
     };
+
+
+    const handleTraspaso = async () => {
+        await createTraspaso(id_bodega_origen, id_bodega_destino, guia, productos);
+        setIsOpenTraspaso(false);
+        setid_bodega_origen("");
+        setid_bodega_destino("");
+        setguia("");
+        setProductos([]); // Limpiar la lista de productos
+    };
+
+    const agregarProducto = () => {
+        const nuevoProducto = {
+            bebida_id: detalleBebida,
+            cantidad: detalleCantidad
+        };
+        setProductos([...productos, nuevoProducto]);
+        setDetalleBebida(""); // Limpiar el campo de selección de bebida
+        setDetalleCantidad(""); // Limpiar el campo de cantidad
+    };
+
+    const eliminarProducto = (index) => {
+        const nuevosProductos = [...productos];
+        nuevosProductos.splice(index, 1);
+        setProductos(nuevosProductos);
+    };
+
+
 
 
     //AVISO DE ELIMINAR
@@ -193,25 +250,115 @@ const bodegaPage = () => {
                 <DrawerCloseButton />
                 <DrawerHeader>Stock</DrawerHeader>
                 <DrawerBody>
-  {stockData ? (
-    stockData.map((bodega, index) => (
-      <Box key={index}>
-        <Heading>{bodega.nombre_bodega}</Heading>
-        <List>
-          {bodega.items.map((item, index) => (
-            <ListItem key={index}>
-              <Text>{item.nombre_bebida} ({item.formato_bebida}) - Cantidad: {item.cantidad}</Text>
-            </ListItem>
-          ))}
-        </List>
-      </Box>
-    ))
-  ) : (
-    <Text>Esta bodega no posee stock</Text>
-  )}
-</DrawerBody>
+                    {stockData ? (
+                        stockData.map((bodega, index) => (
+                            <Box key={index}>
+                                <Heading>{bodega.nombre_bodega}</Heading>
+                                <List>
+                                    {bodega.items.map((item, index) => (
+                                        <ListItem key={index}>
+                                            <Text>{item.nombre_bebida} ({item.formato_bebida}) - Cantidad: {item.cantidad}</Text>
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </Box>
+                        ))
+                    ) : (
+                        <Text>Esta bodega no posee stock</Text>
+                    )}
+                </DrawerBody>
             </DrawerContent>
         </Drawer>
+    );
+
+
+    const modalTraspaso = (
+        <Modal isOpen={isOpenTraspaso} onClose={() => setIsOpenTraspaso(false)}>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>Realizar Traspaso</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <FormControl>
+                        <FormLabel>Bodega Origen:</FormLabel>
+                        <Select
+                            value={id_bodega_origen}
+                            onChange={(e) => {
+                                const selectedBodega = bodegas.find(bodega => bodega.id === parseInt(e.target.value));
+                                setid_bodega_origen(e.target.value);
+                                setBodegaOrigenSeleccionada(selectedBodega);
+                            }}
+                        >
+                            {bodegas.map((bodega) => (
+                                <option key={bodega.id} value={bodega.id}>
+                                    {bodega.nombre}
+                                </option>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <FormControl>
+                        <FormLabel>Bodega Destino:</FormLabel>
+                        <Select
+                            value={id_bodega_destino}
+                            onChange={(e) => setid_bodega_destino(e.target.value)}
+                        >
+                            {bodegas
+                                .filter(bodega => bodega !== bodegaOrigenSeleccionada)
+                                .map((bodega) => (
+                                    <option key={bodega.id} value={bodega.id}>
+                                        {bodega.nombre}
+                                    </option>
+                                ))}
+                        </Select>
+                    </FormControl>
+                    <FormControl>
+                        <FormLabel>Guia:</FormLabel>
+                        <Input value={guia} onChange={(e) => setguia(e.target.value)} />
+                    </FormControl>
+                    <FormControl>
+                        <FormLabel>Productos:</FormLabel>
+                        <Box display="flex" alignItems="center" mt={4}>
+                            <Select
+                                placeholder="Seleccionar Bebida"
+                                value={detalleBebida}
+                                width="200px"
+                                onChange={(e) => setDetalleBebida(parseInt(e.target.value))}
+                            >
+                                {bebidas.map((bebida) => (
+                                    <option key={bebida.id} value={bebida.id}>
+                                        {bebida.nombre}
+                                    </option>
+                                ))}
+                            </Select>
+                            <Input
+                                placeholder="Cantidad"
+                                mr={2}
+                                width="100px"
+                                value={detalleCantidad}
+                                onChange={(e) => setDetalleCantidad(e.target.value)}
+                            />
+
+                            <Button colorScheme="teal" onClick={agregarProducto}>Agregar</Button> {/* Agregar el botón para agregar el producto */}
+                        </Box>
+                    </FormControl>
+
+                    {/* Mostrar la lista de productos seleccionados */}
+                    {productos.map((producto, index) => (
+                        <div key={index}>
+                            <p>Bebida: {producto.bebida_id}</p>
+                            <p>Cantidad: {producto.cantidad}</p>
+                            <Button onClick={() => eliminarProducto(index)}>Eliminar</Button> {/* Agregar el botón para eliminar el producto */}
+                        </div>
+                    ))}
+                </ModalBody>
+                <ModalFooter>
+                    <Button onClick={() => setIsOpenTraspaso(false)}>Cancelar</Button>
+                    <Button colorScheme="blue" ml={3} onClick={handleTraspaso}>
+                        Traspasar
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
     );
 
 
@@ -274,17 +421,16 @@ const bodegaPage = () => {
                             {modalUpdate}
                             {modalCreate}
                             {drawerStock}
+                            {modalTraspaso}
                         </Tbody>
                     </Table>
                 </TableContainer>
-                <Box
-                    textAlign={"center"}
-                    mt={5}
-                >
-                    <Button colorScheme="blue" onClick={() =>
-                        setIsOpen(true)}
-                    >
+                <Box textAlign="center" mt={5} mb={5} display="flex" justifyContent="center" gap={4}>
+                    <Button colorScheme="blue" onClick={() => setIsOpen(true)}>
                         Agregar Bodega
+                    </Button>
+                    <Button colorScheme="green" onClick={() => setIsOpenTraspaso(true)}>
+                        Realizar Traspaso
                     </Button>
                 </Box>
             </Container>
