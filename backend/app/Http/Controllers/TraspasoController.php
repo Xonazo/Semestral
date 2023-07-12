@@ -22,5 +22,16 @@ class TraspasoController extends Controller
     {
         return $this->traspasoRepository->traspasarStock($request);
     }
-   
+
+
+    public function viewAll ()
+    {
+        return $this->traspasoRepository->viewAll();
+    }
+
+    public function viewOrigen (Request $request)
+    {
+        return $this->traspasoRepository->viewOrigen($request);
+    }
+
 }

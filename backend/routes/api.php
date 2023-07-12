@@ -56,4 +56,6 @@ Route::prefix('/stock')->group(function () {
 
 Route::prefix('/traspaso')->group(function () {
     Route::post('/traspasarStock', [TraspasoController::class, 'traspasarStock']);
+    Route::get('/viewAll', [TraspasoController::class, 'viewAll']);
+    Route::get('/viewOrigen', [TraspasoController::class, 'viewOrigen']);
 });

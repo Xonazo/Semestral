@@ -31,15 +31,15 @@ import {
     DrawerCloseButton,
 } from '@chakra-ui/react'
 
-import { DeleteIcon, EditIcon, PlusSquareIcon, ArrowForwardIcon } from "@chakra-ui/icons";
+import { DeleteIcon, EditIcon, PlusSquareIcon, ArrowForwardIcon, InfoOutlineIcon } from "@chakra-ui/icons";
 import { AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter } from "@chakra-ui/react";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Input, FormControl, FormLabel } from "@chakra-ui/react";
 import NavBar from "../components/NavBar.jsx";
 
 import { getBodegas, deleteBodega, updateBodega, createBodega } from "./api/bodegaApi.js";
-import { getStock } from "./api/stockApi.js";
+import { getStock, createEgreso } from "./api/stockApi.js";
 import { Tooltip } from '@chakra-ui/react';
-import { createTraspaso } from "./api/traspasoApi.js";
+import { createTraspaso, getTraspasoBodega } from "./api/traspasoApi.js";
 import { getBebidas } from "./api/bebida.js";
 
 
@@ -62,8 +62,8 @@ const bodegaPage = () => {
     const [bebidas, setBebidas] = useState([]);
     const [productos, setProductos] = useState([]);
     const [bodegaOrigenSeleccionada, setBodegaOrigenSeleccionada] = useState(null);
-
-
+    const [isOpenDrawerTraspaso, setIsOpenDrawerTraspaso] = useState(false);
+    const [traspasos, setTraspasos] = useState([]);
 
 
     useEffect(() => {
@@ -73,7 +73,7 @@ const bodegaPage = () => {
         };
         fetchData();
         getBodegas();
-        
+
     }, []);
 
 
@@ -133,6 +133,9 @@ const bodegaPage = () => {
 
 
     const handleTraspaso = async () => {
+
+
+
         await createTraspaso(id_bodega_origen, id_bodega_destino, guia, productos);
         setIsOpenTraspaso(false);
         setid_bodega_origen("");
@@ -155,6 +158,22 @@ const bodegaPage = () => {
         const nuevosProductos = [...productos];
         nuevosProductos.splice(index, 1);
         setProductos(nuevosProductos);
+    };
+
+    const handleGetTraspasoBodega = async (id_bodega) => {
+        try {
+            const traspasos = await getTraspasoBodega(id_bodega);
+            console.log(traspasos);
+            setTraspasos(traspasos);
+            setIsOpenDrawerTraspaso(true);
+        } catch (error) {
+            console.log("Error al obtener los traspasos:", error);
+            setTraspasos(null);
+        }
+    };
+
+    const onCloseTraspaso = () => {
+        setIsOpenDrawerTraspaso(false);
     };
 
 
@@ -267,9 +286,16 @@ const bodegaPage = () => {
                         <Text>Esta bodega no posee stock</Text>
                     )}
                 </DrawerBody>
+                <Button >Egreso de Stock</Button>
             </DrawerContent>
         </Drawer>
+
     );
+
+
+    
+
+
 
 
     const modalTraspaso = (
@@ -284,9 +310,8 @@ const bodegaPage = () => {
                         <Select
                             value={id_bodega_origen}
                             onChange={(e) => {
-                                const selectedBodega = bodegas.find(bodega => bodega.id === parseInt(e.target.value));
                                 setid_bodega_origen(e.target.value);
-                                setBodegaOrigenSeleccionada(selectedBodega);
+                                console.log("Valor seleccionado en Bodega Origen:", e.target.value);
                             }}
                         >
                             {bodegas.map((bodega) => (
@@ -302,13 +327,11 @@ const bodegaPage = () => {
                             value={id_bodega_destino}
                             onChange={(e) => setid_bodega_destino(e.target.value)}
                         >
-                            {bodegas
-                                .filter(bodega => bodega !== bodegaOrigenSeleccionada)
-                                .map((bodega) => (
-                                    <option key={bodega.id} value={bodega.id}>
-                                        {bodega.nombre}
-                                    </option>
-                                ))}
+                            {bodegas.map((bodega) => (
+                                <option key={bodega.id} value={bodega.id}>
+                                    {bodega.nombre}
+                                </option>
+                            ))}
                         </Select>
                     </FormControl>
                     <FormControl>
@@ -362,6 +385,48 @@ const bodegaPage = () => {
     );
 
 
+    const drawerTraspaso = (
+        <Drawer isOpen={isOpenDrawerTraspaso} placement="right" onClose={onCloseTraspaso} size="md">
+            <DrawerOverlay />
+            <DrawerContent>
+                <DrawerCloseButton />
+                <DrawerHeader>Historial de traspasos</DrawerHeader>
+                <DrawerBody>
+                    {traspasos && traspasos.length > 0 ? (
+                        traspasos.map((traspaso) => (
+                            <Box key={traspaso.id}>
+                                <Heading>{traspaso.bodega_origen.nombre}</Heading>
+                                <Text>Fecha: {traspaso.created_at}</Text>
+                                <Text>Bodega Destino: {traspaso.bodega_destino.nombre}</Text>
+                                {traspaso.detalles.length > 0 ? (
+                                    <List>
+                                        {traspaso.detalles.map((detalle) => (
+                                            <ListItem key={detalle.id}>
+                                                <Text>Bebida: {detalle.bebida.nombre}</Text>
+                                                <Text>Formato: {detalle.bebida.formato}</Text>
+                                                <Text>Cantidad: {detalle.cantidad}</Text>
+                                                {/* Mostrar otros detalles del traspaso si es necesario */}
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                ) : (
+                                    <Text>Esta bodega no tiene traspasos</Text>
+                                )}
+                            </Box>
+                        ))
+                    ) : (
+                        <Text>No hay traspasos disponibles</Text>
+                    )}
+                </DrawerBody>
+            </DrawerContent>
+        </Drawer>
+    );
+
+
+
+
+
+
     return (
         <>
             <NavBar />
@@ -413,6 +478,19 @@ const bodegaPage = () => {
                                                 }}
                                             />
                                         </Tooltip>
+                                        <Tooltip label="Historial de traspasos" placement="top">
+                                            <IconButton
+                                                colorScheme="orange"
+                                                aria-label="Historial de traspasos"
+                                                icon={<InfoOutlineIcon />}
+                                                mr={2}
+                                                onClick={() => {
+                                                    setIsOpenDrawerTraspaso(true);
+                                                    handleGetTraspasoBodega(bodega.id)
+                                                }}
+                                            />
+
+                                        </Tooltip>
 
                                     </Td>
                                 </Tr>
@@ -422,6 +500,7 @@ const bodegaPage = () => {
                             {modalCreate}
                             {drawerStock}
                             {modalTraspaso}
+                            {drawerTraspaso}
                         </Tbody>
                     </Table>
                 </TableContainer>
