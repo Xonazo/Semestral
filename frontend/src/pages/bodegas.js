@@ -41,7 +41,7 @@ import { getStock, createEgreso } from "./api/stockApi.js";
 import { Tooltip } from '@chakra-ui/react';
 import { createTraspaso, getTraspasoBodega } from "./api/traspasoApi.js";
 import { getBebidas } from "./api/bebida.js";
-
+import { Divider } from "@chakra-ui/react";
 
 const bodegaPage = () => {
 
@@ -56,14 +56,19 @@ const bodegaPage = () => {
     const [isOpenTraspaso, setIsOpenTraspaso] = useState(false);
     const [id_bodega_origen, setid_bodega_origen] = useState("");
     const [id_bodega_destino, setid_bodega_destino] = useState("");
+    const [id_bodega, setid_bodega] = useState("");
     const [guia, setguia] = useState("");
-    const [detalleBebida, setDetalleBebida] = useState('');
-    const [detalleCantidad, setDetalleCantidad] = useState('');
+    const [detalleBebida, setDetalleBebida] = useState("");
+    const [detalleCantidad, setDetalleCantidad] = useState("");
     const [bebidas, setBebidas] = useState([]);
     const [productos, setProductos] = useState([]);
     const [bodegaOrigenSeleccionada, setBodegaOrigenSeleccionada] = useState(null);
     const [isOpenDrawerTraspaso, setIsOpenDrawerTraspaso] = useState(false);
     const [traspasos, setTraspasos] = useState([]);
+    const [isOpenEgreso, setIsOpenEgreso] = useState(false);
+    const [egresoBodegaId, setEgresoBodegaId] = useState("");
+    const [egresoProductos, setEgresoProductos] = useState([]);
+
 
 
     useEffect(() => {
@@ -131,22 +136,36 @@ const bodegaPage = () => {
         setIsOpenDrawer(false);
     };
 
-
     const handleTraspaso = async () => {
 
+        try {
+            const nuevoTraspaso = {
+                id_bodega_origen: id_bodega_origen,
+                id_bodega_destino: id_bodega_destino,
+                guia: guia,
+                productos: productos.map((producto) => ({
+                    bebida_id: producto.bebida_id,
+                    cantidad: producto.cantidad,
+                })),
+            };
 
-
-        await createTraspaso(id_bodega_origen, id_bodega_destino, guia, productos);
-        setIsOpenTraspaso(false);
-        setid_bodega_origen("");
-        setid_bodega_destino("");
-        setguia("");
-        setProductos([]); // Limpiar la lista de productos
+            await createTraspaso(id_bodega_origen, id_bodega_destino, guia, productos);
+            const traspasos = await getTraspasoBodega(id_bodega_origen);
+            setTraspasos(traspasos);
+            setIsOpenTraspaso(false);
+            setid_bodega_origen('');
+            setid_bodega_destino('');
+            setguia('');
+            setProductos([]);
+            console.log("Traspaso creado:", nuevoTraspaso);
+        } catch (error) {
+            console.log("Error al crear el traspaso:", error);
+        }
     };
-
     const agregarProducto = () => {
         const nuevoProducto = {
             bebida_id: detalleBebida,
+            bebida_nombre: bebidas.find((bebida) => bebida.id === detalleBebida).nombre,
             cantidad: detalleCantidad
         };
         setProductos([...productos, nuevoProducto]);
@@ -175,6 +194,138 @@ const bodegaPage = () => {
     const onCloseTraspaso = () => {
         setIsOpenDrawerTraspaso(false);
     };
+
+    const handleEgreso = async () => {
+
+        try {
+            const nuevoEgreso = {
+                id_bodega: id_bodega,
+                productos: productos.map((producto) => ({
+                    bebida_id: producto.bebida_id,
+                    cantidad: producto.cantidad,
+                })),
+            };
+
+            await createEgreso(id_bodega, productos);
+            setIsOpenEgreso(false);
+            setid_bodega("");
+            setProductos([]);
+            console.log("Egreso creado:", nuevoEgreso);
+        } catch (error) {
+            console.log("Error al crear el egreso:", error);
+        }
+    };
+    const agregarProductoEgreso = () => {
+        const nuevoProducto = {
+            bebida_id: detalleBebida,
+            bebida_nombre: bebidas.find((bebida) => bebida.id === detalleBebida).nombre,
+            cantidad: detalleCantidad
+        };
+        setProductos([...productos, nuevoProducto]);
+        setDetalleBebida(""); // Limpiar el campo de selección de bebida
+        setDetalleCantidad(""); // Limpiar el campo de cantidad
+    };
+
+    const eliminarProductoEgreso = (index) => {
+        const nuevosProductos = [...productos];
+        nuevosProductos.splice(index, 1);
+        setProductos(nuevosProductos);
+    };
+
+
+    //MODAL DE EDITAR
+    const modalUpdate = (
+        <Modal isOpen={isOpenEdit} onClose={() => setIsOpenEdit(false)}>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>Editar Bebida</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <FormControl>
+                        <FormLabel>Nombre:</FormLabel>
+                        <Input
+                            value={nombre}
+                            onChange={(e) => setNombre(e.target.value)}
+                        />
+                    </FormControl>
+                </ModalBody>
+                <ModalFooter>
+                    <Button onClick={() => setIsOpenEdit(false)}>Cancelar</Button>
+                    <Button colorScheme="blue" ml={3} onClick={handleSave}>
+                        Guardar
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    );
+
+    const modalEgreso = (
+        <Modal isOpen={isOpenEgreso} onClose={() => setIsOpenEgreso(false)}>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>Realizar Egreso</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <FormControl>
+                        <FormLabel>Bodega:</FormLabel>
+                        <Select
+                            value={id_bodega}
+                            onChange={(e) => {
+                                setid_bodega(e.target.value);
+                                console.log("Valor seleccionado en Bodega:", e.target.value);
+                            }}
+                        >
+                            {!id_bodega && <option value="">Seleccionar bodega</option>}                            {bodegas.map((bodega) => (
+                                <option key={bodega.id} value={bodega.id}>
+                                    {bodega.nombre}
+                                </option>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <FormControl>
+                        <FormLabel>Productos:</FormLabel>
+                        <Box display="flex" alignItems="center" mt={4}>
+                            <Select
+                                placeholder="Seleccionar Bebida"
+                                value={detalleBebida}
+                                width="200px"
+                                onChange={(e) => setDetalleBebida(parseInt(e.target.value))}
+                            >
+                                {bebidas.map((bebida) => (
+                                    <option key={bebida.id} value={bebida.id}>
+                                        {bebida.nombre}
+                                    </option>
+                                ))}
+                            </Select>
+                            <Input
+                                placeholder="Cantidad"
+                                mr={2}
+                                width="100px"
+                                value={detalleCantidad}
+                                onChange={(e) => setDetalleCantidad(e.target.value)}
+                            />
+                            <Button colorScheme="teal" onClick={agregarProductoEgreso}>Agregar</Button> {/* Agregar el botón para agregar el producto */}
+                        </Box>
+                    </FormControl>
+
+                    {/* Mostrar la lista de productos seleccionados */}
+                    {productos.map((producto, index) => (
+                        <div key={index}>
+                            <p>Bebida: {producto.bebida_nombre}</p>
+                            <p>Cantidad: {producto.cantidad}</p>
+                            <Button onClick={() => eliminarProductoEgreso(index)}>Eliminar</Button> {/* Agregar el botón para eliminar el producto */}
+                        </div>
+                    ))}
+                </ModalBody>
+                <ModalFooter>
+                    <Button onClick={() => setIsOpenEgreso(false)}>Cancelar</Button>
+                    <Button colorScheme="blue" ml={3} onClick={handleEgreso}>
+                        Egresar
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    );
 
 
 
@@ -205,35 +356,6 @@ const bodegaPage = () => {
         </AlertDialog>
     );
 
-
-
-    //MODAL DE EDITAR
-    const modalUpdate = (
-        <Modal isOpen={isOpenEdit} onClose={() => setIsOpenEdit(false)}>
-            <ModalOverlay />
-            <ModalContent>
-                <ModalHeader>Editar Bebida</ModalHeader>
-                <ModalCloseButton />
-                <ModalBody>
-                    <FormControl>
-                        <FormLabel>Nombre:</FormLabel>
-                        <Input
-                            value={nombre}
-                            onChange={(e) => setNombre(e.target.value)}
-                        />
-                    </FormControl>
-                </ModalBody>
-                <ModalFooter>
-                    <Button onClick={() => setIsOpenEdit(false)}>Cancelar</Button>
-                    <Button colorScheme="blue" ml={3} onClick={handleSave}>
-                        Guardar
-                    </Button>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
-    );
-
-
     //MODAL DE CREAR
     const modalCreate = (
         <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
@@ -261,13 +383,15 @@ const bodegaPage = () => {
     );
 
     const drawerStock = (
-        <Drawer isOpen={isOpenDrawer} placement="right" onClose={onClose}
-            size="md"
-        >
+        <Drawer isOpen={isOpenDrawer} placement="right" onClose={onClose} size="md">
             <DrawerOverlay />
             <DrawerContent>
                 <DrawerCloseButton />
-                <DrawerHeader>Stock</DrawerHeader>
+                <DrawerHeader>
+                    <Flex align="center">
+                        Stock
+                    </Flex>
+                </DrawerHeader>
                 <DrawerBody>
                     {stockData ? (
                         stockData.map((bodega, index) => (
@@ -276,7 +400,9 @@ const bodegaPage = () => {
                                 <List>
                                     {bodega.items.map((item, index) => (
                                         <ListItem key={index}>
-                                            <Text>{item.nombre_bebida} ({item.formato_bebida}) - Cantidad: {item.cantidad}</Text>
+                                            <Text>
+                                                {item.nombre_bebida} ({item.formato_bebida}) - Cantidad: {item.cantidad}
+                                            </Text>
                                         </ListItem>
                                     ))}
                                 </List>
@@ -286,16 +412,9 @@ const bodegaPage = () => {
                         <Text>Esta bodega no posee stock</Text>
                     )}
                 </DrawerBody>
-                <Button >Egreso de Stock</Button>
             </DrawerContent>
         </Drawer>
-
     );
-
-
-    
-
-
 
 
     const modalTraspaso = (
@@ -314,6 +433,7 @@ const bodegaPage = () => {
                                 console.log("Valor seleccionado en Bodega Origen:", e.target.value);
                             }}
                         >
+                            {!id_bodega && <option value="">Seleccionar bodega para origen</option>}
                             {bodegas.map((bodega) => (
                                 <option key={bodega.id} value={bodega.id}>
                                     {bodega.nombre}
@@ -327,6 +447,7 @@ const bodegaPage = () => {
                             value={id_bodega_destino}
                             onChange={(e) => setid_bodega_destino(e.target.value)}
                         >
+                            {!id_bodega && <option value="">Seleccionar bodega para destino</option>}
                             {bodegas.map((bodega) => (
                                 <option key={bodega.id} value={bodega.id}>
                                     {bodega.nombre}
@@ -368,7 +489,7 @@ const bodegaPage = () => {
                     {/* Mostrar la lista de productos seleccionados */}
                     {productos.map((producto, index) => (
                         <div key={index}>
-                            <p>Bebida: {producto.bebida_id}</p>
+                            <p>Bebida: {producto.bebida_nombre}</p>
                             <p>Cantidad: {producto.cantidad}</p>
                             <Button onClick={() => eliminarProducto(index)}>Eliminar</Button> {/* Agregar el botón para eliminar el producto */}
                         </div>
@@ -385,6 +506,7 @@ const bodegaPage = () => {
     );
 
 
+
     const drawerTraspaso = (
         <Drawer isOpen={isOpenDrawerTraspaso} placement="right" onClose={onCloseTraspaso} size="md">
             <DrawerOverlay />
@@ -393,27 +515,25 @@ const bodegaPage = () => {
                 <DrawerHeader>Historial de traspasos</DrawerHeader>
                 <DrawerBody>
                     {traspasos && traspasos.length > 0 ? (
-                        traspasos.map((traspaso) => (
-                            <Box key={traspaso.id}>
-                                <Heading>{traspaso.bodega_origen.nombre}</Heading>
-                                <Text>Fecha: {traspaso.created_at}</Text>
-                                <Text>Bodega Destino: {traspaso.bodega_destino.nombre}</Text>
-                                {traspaso.detalles.length > 0 ? (
+                        <>
+                            <Heading>{traspasos[0].id_bodega_origen.nombre}</Heading>
+                            {traspasos.map((traspaso) => (
+                                <Box key={traspaso.id}>
+                                    <Divider mt={2} mb={2} />
+                                    <Text>Fecha: {traspaso.created_at}</Text>
+                                    <Text>Bodega Destino: {traspaso.id_bodega_destino.nombre}</Text>
+
+                                    <Text>Guia: {traspaso.guia}</Text>
                                     <List>
-                                        {traspaso.detalles.map((detalle) => (
-                                            <ListItem key={detalle.id}>
-                                                <Text>Bebida: {detalle.bebida.nombre}</Text>
-                                                <Text>Formato: {detalle.bebida.formato}</Text>
-                                                <Text>Cantidad: {detalle.cantidad}</Text>
-                                                {/* Mostrar otros detalles del traspaso si es necesario */}
+                                        {traspaso.detalles.map((detalles, index) => (
+                                            <ListItem key={index}>
+                                                <Text>{detalles.nombre_bebida} ({detalles.formato_bebida}) - Cantidad: {detalles.cantidad}</Text>
                                             </ListItem>
                                         ))}
                                     </List>
-                                ) : (
-                                    <Text>Esta bodega no tiene traspasos</Text>
-                                )}
-                            </Box>
-                        ))
+                                </Box>
+                            ))}
+                        </>
                     ) : (
                         <Text>No hay traspasos disponibles</Text>
                     )}
@@ -421,10 +541,6 @@ const bodegaPage = () => {
             </DrawerContent>
         </Drawer>
     );
-
-
-
-
 
 
     return (
@@ -489,9 +605,7 @@ const bodegaPage = () => {
                                                     handleGetTraspasoBodega(bodega.id)
                                                 }}
                                             />
-
                                         </Tooltip>
-
                                     </Td>
                                 </Tr>
                             ))}
@@ -499,6 +613,7 @@ const bodegaPage = () => {
                             {modalUpdate}
                             {modalCreate}
                             {drawerStock}
+                            {modalEgreso}
                             {modalTraspaso}
                             {drawerTraspaso}
                         </Tbody>
@@ -510,6 +625,9 @@ const bodegaPage = () => {
                     </Button>
                     <Button colorScheme="green" onClick={() => setIsOpenTraspaso(true)}>
                         Realizar Traspaso
+                    </Button>
+                    <Button colorScheme="orange" onClick={() => setIsOpenEgreso(true)}>
+                        Realizar Egreso
                     </Button>
                 </Box>
             </Container>

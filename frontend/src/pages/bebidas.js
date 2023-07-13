@@ -21,6 +21,7 @@ import {
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import { AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter } from "@chakra-ui/react";
 import {  Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Input, FormControl, FormLabel } from "@chakra-ui/react";
+import { Select } from '@chakra-ui/react';
 import NavBar from "../components/NavBar.jsx";
 
 
@@ -102,9 +103,8 @@ const handleCreate = async () => {
     </AlertDialog>
   );
 
-      //MODAL DE EDITAR
-    const modalUpdate =(
-      <Modal isOpen={isOpenEdit} onClose={() => setIsOpenEdit(false)}>
+  const modalUpdate = (
+    <Modal isOpen={isOpenEdit} onClose={() => setIsOpenEdit(false)}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Editar Bebida</ModalHeader>
@@ -112,17 +112,28 @@ const handleCreate = async () => {
         <ModalBody>
           <FormControl>
             <FormLabel>Nombre:</FormLabel>
-            <Input
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-            />
+            <Input value={nombre} onChange={(e) => setNombre(e.target.value)} />
           </FormControl>
           <FormControl mt={4}>
             <FormLabel>Formato:</FormLabel>
-            <Input
-              value={formato}
-              onChange={(e) => setFormato(e.target.value)}
-            />
+            <Select value={formato} onChange={(e) => setFormato(e.target.value)}>
+              <option value="">Seleccionar formato</option>
+              <option value="150 ml">150 ml</option>
+              <option value="200 ml">200 ml</option>
+              <option value="250 ml">250 ml</option>
+              <option value="300 ml">300 ml</option>
+              <option value="330 ml">330 ml</option>
+              <option value="350 ml">350 ml</option>
+              <option value="375 ml">375 ml</option>
+              <option value="500 ml">500 ml</option>
+              <option value="600 ml">600 ml</option>
+              <option value="750 ml">750 ml</option>
+              <option value="1 L">1 L</option>
+              <option value="1.5 L">1.5 L</option>
+              <option value="2 L">2 L</option>
+              <option value="2.5 L">2.5 L</option>
+              <option value="3 L">3 L</option>
+            </Select>
           </FormControl>
         </ModalBody>
         <ModalFooter>
@@ -133,40 +144,51 @@ const handleCreate = async () => {
         </ModalFooter>
       </ModalContent>
     </Modal>
-    );
+  );
 
-    //MODAL DE CREAR
-    const modalCreate =(
+    const modalCreate = (
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Crear Bebida</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <FormControl>
-            <FormLabel>Nombre:</FormLabel>
-            <Input
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-            />
-          </FormControl>
-          <FormControl mt={4}>
-            <FormLabel>Formato:</FormLabel>
-            <Input
-              value={formato}
-              onChange={(e) => setFormato(e.target.value)}
-            />
-          </FormControl>
-        </ModalBody>
-        <ModalFooter>
-          <Button onClick={() => setIsOpen(false)}>Cancelar</Button>
-          <Button colorScheme="blue" ml={3} onClick={handleCreate}>
-            Crear
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Crear Bebida</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <FormControl>
+              <FormLabel>Nombre:</FormLabel>
+              <Input value={nombre} onChange={(e) => setNombre(e.target.value)} />
+            </FormControl>
+            <FormControl mt={4}>
+              <FormLabel>Formato:</FormLabel>
+              <Select value={formato} onChange={(e) => setFormato(e.target.value)}>
+                <option value="">Seleccionar formato</option>
+                <option value="150 ml">150 ml</option>
+                <option value="200 ml">200 ml</option>
+                <option value="250 ml">250 ml</option>
+                <option value="300 ml">300 ml</option>
+                <option value="330 ml">330 ml</option>
+                <option value="350 ml">350 ml</option>
+                <option value="375 ml">375 ml</option>
+                <option value="500 ml">500 ml</option>
+                <option value="600 ml">600 ml</option>
+                <option value="750 ml">750 ml</option>
+                <option value="1 L">1 L</option>
+                <option value="1.5 L">1.5 L</option>
+                <option value="2 L">2 L</option>
+                <option value="2.5 L">2.5 L</option>
+                <option value="3 L">3 L</option>
+              </Select>
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={() => setIsOpen(false)}>Cancelar</Button>
+            <Button colorScheme="blue" ml={3} onClick={handleCreate}>
+              Crear
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     );
+    
 
 
 
