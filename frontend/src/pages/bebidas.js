@@ -199,7 +199,7 @@ const handleCreate = async () => {
       >Lista de Bebidas
       </Heading>
       <Container
-        maxW="container.xl">
+        maxW="-moz-fit-content">
         <TableContainer  >
           <Table variant='striped' colorScheme='blackAlpha'  >
             <Thead bg={'black'} >
@@ -223,19 +223,6 @@ const handleCreate = async () => {
                     mr={2}
 
                     onClick={() => handleEdit(bebida.id)}
-                  />
-                  <IconButton
-                    icon={<DeleteIcon />}
-                    colorScheme="red"
-                    title="Eliminar"
-                    aria-label="Eliminar"
-                    mr={2}
-
-
-                    onClick={() => {
-                      setIsOpenDelete(true);
-                      setSelectedBebidaId(bebida.id);
-                    }}
                   />
                   </Td>
                 </Tr>

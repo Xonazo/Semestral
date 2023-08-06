@@ -42,6 +42,8 @@ import { Tooltip } from '@chakra-ui/react';
 import { createTraspaso, getTraspasoBodega } from "./api/traspasoApi.js";
 import { getBebidas } from "./api/bebida.js";
 import { Divider } from "@chakra-ui/react";
+import { Image } from "@chakra-ui/react";
+
 
 const bodegaPage = () => {
 
@@ -232,6 +234,7 @@ const bodegaPage = () => {
         setProductos(nuevosProductos);
     };
 
+    
 
     //MODAL DE EDITAR
     const modalUpdate = (
@@ -361,7 +364,7 @@ const bodegaPage = () => {
         <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>Crear Bebida</ModalHeader>
+                <ModalHeader>Crear Bodega</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
                     <FormControl>
@@ -382,41 +385,66 @@ const bodegaPage = () => {
         </Modal>
     );
 
+    const imagesNoStock = [
+        "no_stock_1.jpg",
+        "no_stock_2.jpg",
+        "no_stock_3.jpg",
+      ];
+
     const drawerStock = (
         <Drawer isOpen={isOpenDrawer} placement="right" onClose={onClose} size="md">
-            <DrawerOverlay />
-            <DrawerContent>
-                <DrawerCloseButton />
-                <DrawerHeader>
-                    <Flex align="center">
-                        Stock
-                    </Flex>
-                </DrawerHeader>
-                <DrawerBody>
-                    {stockData ? (
-                        stockData.map((bodega, index) => (
-                            <Box key={index}>
-                                <Heading>{bodega.nombre_bodega}</Heading>
-                                <List>
-                                    {bodega.items.map((item, index) => (
-                                        <ListItem key={index}>
-                                            <Text>
-                                                {item.nombre_bebida} ({item.formato_bebida}) - Cantidad: {item.cantidad}
-                                            </Text>
-                                        </ListItem>
-                                    ))}
-                                </List>
-                            </Box>
-                        ))
-                    ) : (
-                        <Text>Esta bodega no posee stock</Text>
-                    )}
-                </DrawerBody>
-            </DrawerContent>
+          <DrawerOverlay />
+          <DrawerContent>
+            <DrawerCloseButton />
+            <DrawerHeader>
+              <Flex align="center">
+                Stock
+              </Flex>
+            </DrawerHeader>
+            <DrawerBody>
+              {stockData ? (
+                stockData.map((bodega, index) => (
+                  <Box key={index}>
+                    <Heading>{bodega.nombre_bodega}</Heading>
+                    <Divider my={2} color="black" /> {/* Línea separadora al principio del grupo de bebidas */}
+                    <List>
+                      {bodega.items.map((item, index) => (
+                        <Box key={index}>
+                          <Box display="flex" flexDirection="column">
+                            <ListItem>
+                              <Text fontSize="lg" fontWeight="bold">
+                                {item.nombre_bebida}
+                              </Text>
+                            </ListItem>
+                            <ListItem>
+                              <Text fontSize="md">
+                                Cantidad: {item.cantidad}
+                              </Text>
+                            </ListItem>
+                          </Box>
+                          {index < bodega.items.length - 1 && <Divider my={2} color="black" />} {/* Línea separadora entre elementos de bebidas */}
+                        </Box>
+                      ))}
+                    </List>
+                    <Divider my={4} color="black" /> {/* Línea separadora al final del grupo de bebidas */}
+                  </Box>
+                ))
+              ) : (
+                <>
+                  {/* Mostrar imagen aleatoria cuando no hay stock */}
+                  <Image src={imagesNoStock[Math.floor(Math.random() * imagesNoStock.length)]} alt="Imagen Aleatoria" />
+                  <Text fontSize="xl" fontWeight="bold">Esta bodega no posee stock</Text>
+                </>
+              )}
+            </DrawerBody>
+          </DrawerContent>
         </Drawer>
-    );
-
-
+      );
+      
+      
+      
+      
+      
     const modalTraspaso = (
         <Modal isOpen={isOpenTraspaso} onClose={() => setIsOpenTraspaso(false)}>
             <ModalOverlay />
@@ -505,57 +533,65 @@ const bodegaPage = () => {
         </Modal>
     );
 
-
+    const images = [
+        "SinTraspaso1.jpeg",
+        "SinTraspaso2.jpeg",
+        "SinTraspaso3.jpeg",
+      ];
 
     const drawerTraspaso = (
         <Drawer isOpen={isOpenDrawerTraspaso} placement="right" onClose={onCloseTraspaso} size="md">
-            <DrawerOverlay />
-            <DrawerContent>
-                <DrawerCloseButton />
-                <DrawerHeader>Historial de traspasos</DrawerHeader>
-                <DrawerBody>
-                    {traspasos && traspasos.length > 0 ? (
-                        <>
-                            <Heading>{traspasos[0].id_bodega_origen.nombre}</Heading>
-                            {traspasos.map((traspaso) => (
-                                <Box key={traspaso.id}>
-                                    <Divider mt={2} mb={2} />
-                                    <Text>Fecha: {traspaso.created_at}</Text>
-                                    <Text>Bodega Destino: {traspaso.id_bodega_destino.nombre}</Text>
-
-                                    <Text>Guia: {traspaso.guia}</Text>
-                                    <List>
-                                        {traspaso.detalles.map((detalles, index) => (
-                                            <ListItem key={index}>
-                                                <Text>{detalles.nombre_bebida} ({detalles.formato_bebida}) - Cantidad: {detalles.cantidad}</Text>
-                                            </ListItem>
-                                        ))}
-                                    </List>
-                                </Box>
-                            ))}
-                        </>
-                    ) : (
-                        <Text>No hay traspasos disponibles</Text>
-                    )}
-                </DrawerBody>
-            </DrawerContent>
+          <DrawerOverlay />
+          <DrawerContent>
+            <DrawerCloseButton />
+            <DrawerHeader>Historial de traspasos</DrawerHeader>
+            <DrawerBody>
+              {traspasos && traspasos.length > 0 ? (
+                <>
+                  <Heading>{traspasos[0].id_bodega_origen.nombre}</Heading>
+                  {traspasos.map((traspaso) => (
+                    <Box key={traspaso.id}>
+                      <Divider mt={2} mb={2} />
+                      <Text fontSize="lg" fontWeight="bold" color="black">Bodega Destino: {traspaso.id_bodega_destino.nombre}</Text> {/* Tamaño de fuente más grande para el nombre de Bodega Destino */}
+                      <Text>Guia: {traspaso.guia}</Text>
+                      <List>
+                        {traspaso.detalles.map((detalles, index) => (
+                          <ListItem key={index}>
+                            <Text>
+                              {detalles.nombre_bebida} ({detalles.formato_bebida}) - Cantidad: {detalles.cantidad}
+                            </Text>
+                          </ListItem>
+                        ))}
+                      </List>
+                      <Text>Fecha: {new Date(traspaso.created_at).toLocaleString()}</Text>
+                    </Box>
+                  ))}
+                </>
+              ) : (
+                <>
+                  {/* Mostrar imagen aleatoria cuando no hay traspasos */}
+                  <Image src={images[Math.floor(Math.random() * images.length)]} alt="Imagen Aleatoria" />
+                  <Text fontSize="xl" fontWeight="bold">No hay traspasos disponibles</Text>
+                </>
+              )}
+            </DrawerBody>
+          </DrawerContent>
         </Drawer>
-    );
-
-
+      );      
+      
     return (
         <>
             <NavBar />
             <Heading textAlign={"center"} mt={5} mb={5} color={"black"}>
                 Lista de bodegas
             </Heading>
-            <Container maxW="container.xl">
+            <Container maxW="-moz-fit-content">
                 <TableContainer>
                     <Table variant={"striped"} colorScheme="blackAlpha">
                         <Thead bg={"black"}>
                             <Tr>
-                                <Th color={"white"}>Nombre</Th>
-                                <Th color={"white"}>Acciones</Th>
+                                <Th fontSize={"15px"} color={"white"} p={2}>Nombre</Th>
+                                <Th fontSize={"15px"} color={"white"} p={2}>Acciones</Th>
                             </Tr>
                         </Thead>
                         <Tbody>
@@ -569,18 +605,6 @@ const bodegaPage = () => {
                                             icon={<EditIcon />}
                                             mr={2}
                                             onClick={() => handleEdit(bodega.id)}
-
-                                        />
-                                        <IconButton
-                                            colorScheme="red"
-                                            aria-label="Eliminar"
-                                            icon={<DeleteIcon />}
-                                            mr={2}
-
-                                            onClick={() => {
-                                                setIsOpenDelete(true);
-                                                setSelectedBodegaId(bodega.id);
-                                            }}
                                         />
                                         <Tooltip label="ver Stock" placement="top">
                                             <IconButton
